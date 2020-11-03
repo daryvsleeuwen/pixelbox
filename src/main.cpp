@@ -22,7 +22,6 @@ struct pixelCoords
 
 int mainHue = 0;
 struct pixelCoords lastpixel;
-struct pixelCoords newpixel;
 int currentpixels[NUM_LEDS];
 int fadeduration = 1200;
 
@@ -50,6 +49,8 @@ int convertPixelCoords(struct pixelCoords coords)
 
 struct pixelCoords findPixelNeighbour(struct pixelCoords coords)
 {
+  struct pixelCoords temp = coords;
+
   srand(millis());
   int xAddition = (rand() % 3) - 1;
   int yAddition = (rand() % 3) - 1;
@@ -58,23 +59,24 @@ struct pixelCoords findPixelNeighbour(struct pixelCoords coords)
   {
     findPixelNeighbour(coords);
   }
-  if (coords.x + xAddition > ROW_LENGTH - 1 || coords.y + yAddition > ROW_LENGTH - 1 || coords.x + xAddition < 0 || coords.y + yAddition < 0)
+
+  //OUT OF BORDER CHECK
+  if (temp.x + xAddition > ROW_LENGTH - 1 || temp.y + yAddition > ROW_LENGTH - 1 || temp.x + xAddition < 0 || temp.y + yAddition < 0)
   {
     findPixelNeighbour(coords);
   }
+
   else
   {
-    coords.x += xAddition;
-    coords.y += yAddition;
+    temp.x += xAddition;
+    temp.y += yAddition;
 
-    lastpixel = coords;
-    return lastpixel;
+    return temp;
   }
 }
 
 void loop()
 {
-  FastLED.delay(1000 / FRAMES_PER_SECOND);
   FastLED.clear();
 
   EVERY_N_MILLIS(20)
@@ -85,9 +87,20 @@ void loop()
       mainHue = 0;
     }
   }
-  struct pixelCoords coords = findPixelNeighbour(lastpixel);
-  int index = convertPixelCoords(coords);
-  leds[index] = CHSV(mainHue, 255, 255);
+  struct pixelCoords npixel;
+  npixel = findPixelNeighbour(lastpixel);
+  if (npixel.x == lastpixel.x && npixel.y == lastpixel.y)
+  {
+    npixel = findPixelNeighbour(lastpixel);
+  }
+
+  int lindex = convertPixelCoords(lastpixel);
+  int nindex = convertPixelCoords(npixel);
+
+  leds[nindex] = CHSV(mainHue, 255, 255);
+  leds[lindex] = CHSV(mainHue, 255, 140);
+
   FastLED.show();
-  delay(90);
+  lastpixel = npixel;
+  delay(100);
 }
