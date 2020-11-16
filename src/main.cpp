@@ -20,8 +20,8 @@ struct pixelCoords
 };
 
 CRGB leds[NUM_LEDS];
-int mainHue = 0;
-int minFadeValue = 50;
+int mainHue = 1;
+int minFadeValue = 10;
 const int traillength = 20;
 int fadestep = (255 - minFadeValue) / (traillength - 1);
 struct pixelCoords trail[traillength];
@@ -94,9 +94,9 @@ void loop()
 {
   FastLED.clear();
 
-  EVERY_N_MILLIS(20)
+   EVERY_N_MILLIS(20)
   {
-    mainHue += 30;
+    mainHue += 10;
     if (mainHue > 255)
     {
       mainHue = 0;
