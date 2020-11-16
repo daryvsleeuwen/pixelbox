@@ -26,7 +26,7 @@ CRGB leds[NUM_LEDS];
 int mainHue = 1;
 double maxdistance = 30.0;
 int faseduration = 3000;
-int minFadeValue = 10;
+int minFadeValue = 30.0;
 const int traillength = 20;
 int fadestep = (255 - minFadeValue) / (traillength - 1);
 struct pixelCoords trail[traillength];
@@ -59,7 +59,6 @@ void setup()
 
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
-  lastscanneddistance = ReadDistance();
 
   for (int i = 0; i < traillength; i++)
   {
@@ -75,9 +74,9 @@ int BoundDistance(int dist)
   }
   else
   {
-    if (dist < 5)
+    if (dist < 2)
     {
-      dist = 5;
+      dist = 2;
     }
     lastscanneddistance = dist;
   }
@@ -87,7 +86,20 @@ int BoundDistance(int dist)
 
 int convertPixelCoords(struct pixelCoords coords)
 {
-  return (coords.x - 1) + ((coords.y - 1) * ROW_LENGTH);
+  int index = coords.x + (coords.y * ROW_LENGTH);
+
+  if (index > NUM_LEDS)
+  {
+    return NUM_LEDS;
+  }
+  else if (index < 0)
+  {
+    index = 0;
+  }
+  else
+  {
+    return index;
+  }
 }
 
 struct pixelCoords findPixelNeighbour(struct pixelCoords coords)
@@ -161,19 +173,23 @@ void fase2()
   int distance = ReadDistance();
   double percentage = distance / maxdistance;
 
-  if(percentage > 1){
+  if (percentage > 1)
+  {
     percentage = 1;
   }
-  else if(percentage < 0){
+  else if (percentage < 0)
+  {
     percentage = 0;
   }
 
-  int y = percentage * ROW_LENGTH;
+  int y = percentage * ROW_LENGTH - 1;
+  //int lowersteps = y - 1;
+  //int highersteps = ROW_LENGTH - y + 1;
+  //int fadebase = 255 / lowersteps + minFadeValue;
 
-  for (int i = 1; i < ROW_LENGTH + 1; i++)
+  for (int x = 0; x < COLUMN_LENGTH; x++)
   {
-    stripe[i] = pixelCoords{i, y};
-    int index = convertPixelCoords(stripe[i]);
+    int index = convertPixelCoords(pixelCoords{x, y});
     leds[index] = CHSV(mainHue, 255, 255);
   }
 
