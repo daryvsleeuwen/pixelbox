@@ -24,7 +24,7 @@ struct pixelCoords
 
 CRGB leds[NUM_LEDS];
 int mainHue = 1;
-int maxdistance = 30;
+double maxdistance = 30.0;
 int faseduration = 3000;
 int minFadeValue = 10;
 const int traillength = 20;
@@ -40,13 +40,12 @@ struct pixelCoords stripe[ROW_LENGTH];
 int ReadDistance()
 {
   digitalWrite(trigPin, LOW);
-  delayMicroseconds(4);
+  delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
-  delayMicroseconds(20);
+  delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
   long duration = pulseIn(echoPin, HIGH);
   int distance = duration * 0.034 / 2;
-  Serial.println(distance);
   return distance;
 }
 
@@ -159,14 +158,21 @@ void fase1()
 
 void fase2()
 {
-  int distance = 20;
-
+  int distance = ReadDistance();
   double percentage = distance / maxdistance;
-  int y = COLUMN_LENGTH * percentage;
+
+  if(percentage > 1){
+    percentage = 1;
+  }
+  else if(percentage < 0){
+    percentage = 0;
+  }
+
+  int y = percentage * ROW_LENGTH;
 
   for (int i = 1; i < ROW_LENGTH + 1; i++)
   {
-    stripe[i] = pixelCoords{i, 5};
+    stripe[i] = pixelCoords{i, y};
     int index = convertPixelCoords(stripe[i]);
     leds[index] = CHSV(mainHue, 255, 255);
   }
