@@ -11,7 +11,10 @@
 #define COLUMN_LENGTH 7
 #define ROW_LENGTH 7
 #define BRIGHTNESS 255
-#define FRAMES_PER_SECOND 120
+#define FRAMES_PER_SECOND 30
+
+typedef void (*faseCycle[])();
+// faseCycle fases = { test };
 
 struct pixelCoords
 {
@@ -21,10 +24,31 @@ struct pixelCoords
 
 CRGB leds[NUM_LEDS];
 int mainHue = 1;
+int maxdistance = 30;
+int faseduration = 3000;
 int minFadeValue = 10;
 const int traillength = 20;
 int fadestep = (255 - minFadeValue) / (traillength - 1);
 struct pixelCoords trail[traillength];
+
+int trigPin = 8;
+int echoPin = 9;
+int lastscanneddistance;
+int stripethickness = 1;
+struct pixelCoords stripe[ROW_LENGTH];
+
+int ReadDistance()
+{
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(4);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(20);
+  digitalWrite(trigPin, LOW);
+  long duration = pulseIn(echoPin, HIGH);
+  int distance = duration * 0.034 / 2;
+  Serial.println(distance);
+  return distance;
+}
 
 void setup()
 {
@@ -34,10 +58,32 @@ void setup()
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(BRIGHTNESS);
 
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  lastscanneddistance = ReadDistance();
+
   for (int i = 0; i < traillength; i++)
   {
     trail[i] = pixelCoords{4, 4};
   }
+}
+
+int BoundDistance(int dist)
+{
+  if (dist > (lastscanneddistance + 5) || dist < (lastscanneddistance - 5))
+  {
+    dist = lastscanneddistance;
+  }
+  else
+  {
+    if (dist < 5)
+    {
+      dist = 5;
+    }
+    lastscanneddistance = dist;
+  }
+
+  return dist;
 }
 
 int convertPixelCoords(struct pixelCoords coords)
@@ -90,19 +136,8 @@ void shiftPixelTrail(struct pixelCoords pixeltrail[])
   }
 }
 
-void loop()
+void fase1()
 {
-  FastLED.clear();
-
-   EVERY_N_MILLIS(20)
-  {
-    mainHue += 10;
-    if (mainHue > 255)
-    {
-      mainHue = 0;
-    }
-  }
-
   struct pixelCoords npixel;
   npixel = findPixelNeighbour(trail[0]);
   if (npixel.x == trail[0].x && npixel.y == trail[0].y)
@@ -120,5 +155,38 @@ void loop()
   }
 
   FastLED.show();
-  delay(30);
+}
+
+void fase2()
+{
+  int distance = 20;
+
+  double percentage = distance / maxdistance;
+  int y = COLUMN_LENGTH * percentage;
+
+  for (int i = 1; i < ROW_LENGTH + 1; i++)
+  {
+    stripe[i] = pixelCoords{i, 5};
+    int index = convertPixelCoords(stripe[i]);
+    leds[index] = CHSV(mainHue, 255, 255);
+  }
+
+  FastLED.show();
+}
+
+void loop()
+{
+  FastLED.clear();
+  delay(1000 / FRAMES_PER_SECOND);
+
+  EVERY_N_MILLIS(20)
+  {
+    mainHue += 10;
+    if (mainHue > 255)
+    {
+      mainHue = 0;
+    }
+  }
+
+  fase2();
 }
