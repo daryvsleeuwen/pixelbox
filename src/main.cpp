@@ -26,8 +26,8 @@ CRGB leds[NUM_LEDS];
 int mainHue = 1;
 double maxdistance = 30.0;
 int faseduration = 3000;
-int minFadeValue = 30.0;
-const int traillength = 20;
+int minFadeValue = 40.0;
+const int traillength = 40;
 int fadestep = (255 - minFadeValue) / (traillength - 1);
 struct pixelCoords trail[traillength];
 
@@ -46,7 +46,9 @@ int ReadDistance()
   digitalWrite(trigPin, LOW);
   long duration = pulseIn(echoPin, HIGH);
   int distance = duration * 0.034 / 2;
-  return distance;
+
+  if (distance)
+    return distance;
 }
 
 void setup()
@@ -64,24 +66,6 @@ void setup()
   {
     trail[i] = pixelCoords{4, 4};
   }
-}
-
-int BoundDistance(int dist)
-{
-  if (dist > (lastscanneddistance + 5) || dist < (lastscanneddistance - 5))
-  {
-    dist = lastscanneddistance;
-  }
-  else
-  {
-    if (dist < 2)
-    {
-      dist = 2;
-    }
-    lastscanneddistance = dist;
-  }
-
-  return dist;
 }
 
 int convertPixelCoords(struct pixelCoords coords)
@@ -182,10 +166,28 @@ void fase2()
     percentage = 0;
   }
 
-  int y = percentage * ROW_LENGTH - 1;
-  //int lowersteps = y - 1;
-  //int highersteps = ROW_LENGTH - y + 1;
-  //int fadebase = 255 / lowersteps + minFadeValue;
+  int y = ROW_LENGTH * percentage;
+  int highersteps = ROW_LENGTH - y;
+  int lowerbase = 100 / y;
+  int higherbase = 100 / highersteps;
+
+  for (int i = 0; i < y; i++)
+  {
+    for (int x = 0; x < COLUMN_LENGTH; x++)
+    {
+      int index = convertPixelCoords(pixelCoords{x, i});
+      leds[index] = CHSV(mainHue, 255, lowerbase * i + minFadeValue);
+    }
+  }
+
+  for (int j = 0; j < highersteps; j++)
+  {
+    for (int x = 0; x < COLUMN_LENGTH; x++)
+    {
+      int index = convertPixelCoords(pixelCoords{x, y + j});
+      leds[index] = CHSV(mainHue, 255, 100 - (higherbase * j));
+    }
+  }
 
   for (int x = 0; x < COLUMN_LENGTH; x++)
   {
