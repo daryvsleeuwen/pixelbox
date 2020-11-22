@@ -1,2 +1,2 @@
 # pixelbox
-Custuom animated pixelbox
+Custom animated pixelbox
