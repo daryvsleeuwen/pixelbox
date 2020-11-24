@@ -22,6 +22,8 @@ struct pixelCoords
   int y;
 };
 
+#include <trailpalettes.h>
+
 CRGB leds[NUM_LEDS];
 int mainHue = 1;
 double maxdistance = 30.0;
@@ -34,10 +36,8 @@ struct pixelCoords trail[traillength];
 int trigPin = 8;
 int echoPin = 9;
 int lastscanneddistance;
-int stripethickness = 1;
-struct pixelCoords stripe[ROW_LENGTH];
 
-int ReadDistance()
+int ReadDistance(int trig, int echo)
 {
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -49,6 +49,28 @@ int ReadDistance()
 
   if (distance)
     return distance;
+}
+
+double ReadedDistanceToPercentage(int distance)
+{
+  double percentage = distance / maxdistance;
+
+  if (percentage > 1)
+  {
+    percentage = 1;
+  }
+  else if (percentage < 0)
+  {
+    percentage = 0;
+  }
+
+  return percentage;
+}
+
+int random(int min, int max)
+{
+  srand(millis());
+  return rand() % (max - min) + min;
 }
 
 void setup()
@@ -154,17 +176,7 @@ void fase1()
 
 void fase2()
 {
-  int distance = ReadDistance();
-  double percentage = distance / maxdistance;
-
-  if (percentage > 1)
-  {
-    percentage = 1;
-  }
-  else if (percentage < 0)
-  {
-    percentage = 0;
-  }
+  double percentage = ReadedDistanceToPercentage(ReadDistance(8, 9));
 
   int y = ROW_LENGTH * percentage;
   int highersteps = ROW_LENGTH - y;
@@ -198,6 +210,20 @@ void fase2()
   FastLED.show();
 }
 
+void fase3()
+{
+  double percentage = ReadedDistanceToPercentage(ReadDistance(8, 9));
+  int trail = 4;
+  int index = NUM_LEDS * percentage;
+
+  for (int i = trail; i > 0; i--)
+  {
+    //int hue = random(BlueGreen.ehue, BlueGreen.shue);
+    leds[index - i] = CHSV(mainHue, 255, 255);
+  }
+  FastLED.show();
+}
+
 void loop()
 {
   FastLED.clear();
@@ -212,5 +238,5 @@ void loop()
     }
   }
 
-  fase2();
+  fase3();
 }
