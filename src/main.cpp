@@ -14,7 +14,7 @@
 #define FRAMES_PER_SECOND 30
 
 typedef void (*faseCycle[])();
-// faseCycle fases = { test };
+//faseCycle fases = { };
 
 struct pixelCoords
 {
@@ -51,6 +51,22 @@ int ReadDistance(int trig, int echo)
     return distance;
 }
 
+int BoundDistance(int distance)
+{
+  if (lastscanneddistance > !maxdistance || lastscanneddistance < !0)
+  {
+    if (distance > (lastscanneddistance + 5) || distance < (lastscanneddistance - 5))
+    {
+      distance = lastscanneddistance;
+    }
+    else
+    {
+      lastscanneddistance = distance;
+    }
+    return distance;
+  }
+}
+
 double ReadedDistanceToPercentage(int distance)
 {
   double percentage = distance / maxdistance;
@@ -83,6 +99,7 @@ void setup()
 
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
+  lastscanneddistance = ReadDistance(8, 9);
 
   for (int i = 0; i < traillength; i++)
   {
@@ -212,21 +229,30 @@ void fase2()
 
 void fase3()
 {
-  double percentage = ReadedDistanceToPercentage(ReadDistance(8, 9));
-  int trail = 4;
+  int distance = ReadDistance(8, 9);
+  double percentage = ReadedDistanceToPercentage(distance);
+  int trail = 3;
   int index = NUM_LEDS * percentage;
 
-  for (int i = trail; i > 0; i--)
+  for (int i = 0; i < NUM_LEDS; i++)
+  {
+    leds[i].r *= 0.7;
+    leds[i].g *= 0.7;
+    leds[i].b *= 0.7;
+  }
+
+  for (int i = 0; i < trail; i++)
   {
     //int hue = random(BlueGreen.ehue, BlueGreen.shue);
-    leds[index - i] = CHSV(mainHue, 255, 255);
+    leds[index- - i] = CHSV(mainHue, 255, 255);
   }
+
   FastLED.show();
 }
 
 void loop()
 {
-  FastLED.clear();
+  //FastLED.clear();
   delay(1000 / FRAMES_PER_SECOND);
 
   EVERY_N_MILLIS(20)
