@@ -258,9 +258,9 @@ void fase3()
 
 //fase4 variables
 double shoottrailpercentage = 0.0;
-double shoottraillduration = 800.0;
-double additionstep = shoottraillduration / 20 / 1000;
-int shoottrail = 2;
+double shoottraillduration = 2000.0;
+double additionstep = 20 / shoottraillduration;
+int shoottrail = 1;
 bool opposite = false;
 
 void fase4()
@@ -269,10 +269,16 @@ void fase4()
   //fadeAllPixels();
   EVERY_N_MILLIS(20)
   {
+    additionstep *= 1.1;
     shoottrailpercentage += additionstep;
 
+    if(shoottrailpercentage > 0.5){
+      additionstep *= 0.9;
+    }
+  
     if(shoottrailpercentage > 1){
       shoottrailpercentage = 0;
+      additionstep = 20 / shoottraillduration;
       opposite = !opposite;
     } 
   }
@@ -285,11 +291,11 @@ void fase4()
     }
     else
     {
-      int y = shoottrailpercentage * (COLUMN_LENGTH + 1);
+      int x = shoottrailpercentage * (COLUMN_LENGTH + 1);
 
       for (int j = 0; j < shoottrail; j++)
       {
-        int index = convertPixelCoords(pixelCoords{i, j + y});
+        int index = convertPixelCoords(pixelCoords{i, j + x});
         leds[index] = CHSV(mainHue, 255, 255);
       }
     }
