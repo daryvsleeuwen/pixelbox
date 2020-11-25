@@ -105,6 +105,8 @@ void setup()
   {
     trail[i] = pixelCoords{4, 4};
   }
+
+  FastLED.clear();
 }
 
 int convertPixelCoords(struct pixelCoords coords)
@@ -113,7 +115,7 @@ int convertPixelCoords(struct pixelCoords coords)
 
   if (index > NUM_LEDS)
   {
-    return NUM_LEDS;
+    return NUM_LEDS + 2;
   }
   else if (index < 0)
   {
@@ -122,6 +124,16 @@ int convertPixelCoords(struct pixelCoords coords)
   else
   {
     return index;
+  }
+}
+
+void fadeAllPixels()
+{
+  for (int i = 0; i < NUM_LEDS; i++)
+  {
+    leds[i].r *= 0.7;
+    leds[i].g *= 0.7;
+    leds[i].b *= 0.7;
   }
 }
 
@@ -157,13 +169,11 @@ void shiftPixelTrail(struct pixelCoords pixeltrail[])
 {
   struct pixelCoords temp[traillength];
 
-  //COPY TRAIL ARRAY TO TEMP ARRAY
   for (int i = 0; i < traillength; i++)
   {
     temp[i] = pixeltrail[i];
   }
 
-  //MODIFY ORIGINAL TRAIL ARRAY
   for (int i = 1; i < traillength + 1; i++)
   {
     pixeltrail[i] = temp[i - 1];
@@ -193,7 +203,8 @@ void fase1()
 
 void fase2()
 {
-  double percentage = ReadedDistanceToPercentage(ReadDistance(8, 9));
+  int distance = ReadDistance(8, 9);
+  double percentage = ReadedDistanceToPercentage(distance);
 
   int y = ROW_LENGTH * percentage;
   int highersteps = ROW_LENGTH - y;
@@ -234,19 +245,55 @@ void fase3()
   int trail = 3;
   int index = NUM_LEDS * percentage;
 
-  for (int i = 0; i < NUM_LEDS; i++)
-  {
-    leds[i].r *= 0.7;
-    leds[i].g *= 0.7;
-    leds[i].b *= 0.7;
-  }
+  fadeAllPixels();
 
   for (int i = 0; i < trail; i++)
   {
     //int hue = random(BlueGreen.ehue, BlueGreen.shue);
-    leds[index- - i] = CHSV(mainHue, 255, 255);
+    leds[index - -i] = CHSV(mainHue, 255, 255);
   }
 
+  FastLED.show();
+}
+
+//fase4 variables
+double shoottrailpercentage = 0.0;
+double shoottraillduration = 800.0;
+double additionstep = shoottraillduration / 20 / 1000;
+int shoottrail = 2;
+bool opposite = false;
+
+void fase4()
+{
+  FastLED.clear();
+  //fadeAllPixels();
+  EVERY_N_MILLIS(20)
+  {
+    shoottrailpercentage += additionstep;
+
+    if(shoottrailpercentage > 1){
+      shoottrailpercentage = 0;
+      opposite = !opposite;
+    } 
+  }
+
+  for (int i = 0; i < ROW_LENGTH; i++)
+  {
+    if (i % 2 != 0)
+    {
+      continue;
+    }
+    else
+    {
+      int y = shoottrailpercentage * (COLUMN_LENGTH + 1);
+
+      for (int j = 0; j < shoottrail; j++)
+      {
+        int index = convertPixelCoords(pixelCoords{i, j + y});
+        leds[index] = CHSV(mainHue, 255, 255);
+      }
+    }
+  }
   FastLED.show();
 }
 
@@ -264,5 +311,5 @@ void loop()
     }
   }
 
-  fase3();
+  fase4();
 }
