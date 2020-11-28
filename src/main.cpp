@@ -11,7 +11,7 @@
 #define COLUMN_LENGTH 7
 #define ROW_LENGTH 7
 #define BRIGHTNESS 255
-#define FRAMES_PER_SECOND 120
+#define FRAMES_PER_SECOND 30
 
 struct pixelCoords
 {
@@ -21,10 +21,7 @@ struct pixelCoords
 
 CRGB leds[NUM_LEDS];
 int mainHue = 1;
-int minFadeValue = 30;
-const int traillength = 10;
-int fadestep = (255 - minFadeValue) / (traillength - 1);
-struct pixelCoords trail[traillength];
+pixelCoords lastpixel = pixelCoords{3, 3};
 
 void setup()
 {
@@ -34,15 +31,24 @@ void setup()
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(BRIGHTNESS);
 
-  for (int i = 0; i < traillength; i++)
-  {
-    trail[i] = pixelCoords{4, 4};
-  }
 }
 
 int convertPixelCoords(struct pixelCoords coords)
 {
-  return (coords.x - 1) + ((coords.y - 1) * ROW_LENGTH);
+  int index = coords.x + (coords.y * ROW_LENGTH);
+
+  if (index > NUM_LEDS)
+  {
+    return NUM_LEDS;
+  }
+  else if (index < 0)
+  {
+    index = 0;
+  }
+  else
+  {
+    return index;
+  }
 }
 
 struct pixelCoords findPixelNeighbour(struct pixelCoords coords)
@@ -73,26 +79,9 @@ struct pixelCoords findPixelNeighbour(struct pixelCoords coords)
   }
 }
 
-void shiftPixelTrail(struct pixelCoords pixeltrail[])
-{
-  struct pixelCoords temp[traillength];
-
-  //COPY TRAIL ARRAY TO TEMP ARRAY
-  for (int i = 0; i < traillength; i++)
-  {
-    temp[i] = pixeltrail[i];
-  }
-
-  //MODIFY ORIGINAL TRAIL ARRAY
-  for (int i = 1; i < traillength + 1; i++)
-  {
-    pixeltrail[i] = temp[i - 1];
-  }
-}
-
 void loop()
 {
-  FastLED.clear();
+  delay(1000 / FRAMES_PER_SECOND);
 
    EVERY_N_MILLIS(20)
   {
@@ -103,22 +92,19 @@ void loop()
     }
   }
 
-  struct pixelCoords npixel;
-  npixel = findPixelNeighbour(trail[0]);
-  if (npixel.x == trail[0].x && npixel.y == trail[0].y)
+  struct pixelCoords newpixel;
+  newpixel = findPixelNeighbour(lastpixel);
+  if (newpixel.x == lastpixel.x && newpixel.y == lastpixel.y)
   {
-    npixel = findPixelNeighbour(trail[0]);
+    newpixel = findPixelNeighbour(lastpixel);
   }
 
-  trail[0] = npixel;
-  shiftPixelTrail(trail);
+  lastpixel = newpixel;
+  fadeToBlackBy(leds, NUM_LEDS, 60);
 
-  for (int i = 0; i < traillength; i++)
-  {
-    int index = convertPixelCoords(trail[i]);
-    leds[index] = CHSV(mainHue, 255, fadestep * i);
-  }
+  int index = convertPixelCoords(newpixel);
+  leds[index] = CHSV(mainHue, 255, 255);
 
   FastLED.show();
-  delay(30);
+  delay(20);
 }
