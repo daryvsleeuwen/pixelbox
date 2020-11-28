@@ -25,13 +25,10 @@ struct pixelCoords
 #include <trailpalettes.h>
 
 CRGB leds[NUM_LEDS];
-int mainHue = 1;
 double maxdistance = 30.0;
-int faseduration = 3000;
-int minFadeValue = 40.0;
-const int traillength = 40;
-int fadestep = (255 - minFadeValue) / (traillength - 1);
-struct pixelCoords trail[traillength];
+int mainHue = 1;
+double minFadeValue = 40.0;
+pixelCoords lastpixel = pixelCoords{3, 3};
 
 int trigPin = 8;
 int echoPin = 9;
@@ -101,10 +98,7 @@ void setup()
   pinMode(echoPin, INPUT);
   lastscanneddistance = ReadDistance(8, 9);
 
-  for (int i = 0; i < traillength; i++)
-  {
-    trail[i] = pixelCoords{4, 4};
-  }
+  lastpixel = pixelCoords{4, 4};
 }
 
 int convertPixelCoords(struct pixelCoords coords)
@@ -153,40 +147,21 @@ struct pixelCoords findPixelNeighbour(struct pixelCoords coords)
   }
 }
 
-void shiftPixelTrail(struct pixelCoords pixeltrail[])
-{
-  struct pixelCoords temp[traillength];
-
-  //COPY TRAIL ARRAY TO TEMP ARRAY
-  for (int i = 0; i < traillength; i++)
-  {
-    temp[i] = pixeltrail[i];
-  }
-
-  //MODIFY ORIGINAL TRAIL ARRAY
-  for (int i = 1; i < traillength + 1; i++)
-  {
-    pixeltrail[i] = temp[i - 1];
-  }
-}
-
 void fase1()
 {
-  struct pixelCoords npixel;
-  npixel = findPixelNeighbour(trail[0]);
-  if (npixel.x == trail[0].x && npixel.y == trail[0].y)
+  struct pixelCoords newpixel;
+  newpixel = findPixelNeighbour(lastpixel);
+  
+  if (newpixel.x == lastpixel.x && newpixel.y == lastpixel.y)
   {
-    npixel = findPixelNeighbour(trail[0]);
+    newpixel = findPixelNeighbour(lastpixel);
   }
 
-  trail[0] = npixel;
-  shiftPixelTrail(trail);
+  lastpixel = newpixel;
+  fadeToBlackBy(leds, NUM_LEDS, 60);
 
-  for (int i = 0; i < traillength; i++)
-  {
-    int index = convertPixelCoords(trail[i]);
-    leds[index] = CHSV(mainHue, 255, fadestep * i);
-  }
+  int index = convertPixelCoords(newpixel);
+  leds[index] = CHSV(mainHue, 255, 255);
 
   FastLED.show();
 }
@@ -264,5 +239,5 @@ void loop()
     }
   }
 
-  fase3();
+  fase1();
 }
