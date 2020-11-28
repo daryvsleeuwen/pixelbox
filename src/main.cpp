@@ -21,8 +21,8 @@ struct pixelCoords
 
 CRGB leds[NUM_LEDS];
 int mainHue = 1;
-int minFadeValue = 10;
-const int traillength = 20;
+int minFadeValue = 30;
+const int traillength = 10;
 int fadestep = (255 - minFadeValue) / (traillength - 1);
 struct pixelCoords trail[traillength];
 
