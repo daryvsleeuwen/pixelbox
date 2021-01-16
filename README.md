@@ -30,12 +30,12 @@ To make the Pixelbox interactive with user input, a [Ultrasonic sensor](https://
 Before the code will work properly in your situation you will need to change a few basic things. Here are the settings for your Pixelbox. Change them in the **main.cpp** file according to your situation.
 
 ````
-#define DATA_PIN YOUR_DATA_PIN            //Microcontroller pin for the LED strip data line
-#define LED_TYPE WS2812       //Your LED strip type. Check https://github.com/FastLED/FastLED for the supported LED strips
-#define COLOR_ORDER GRB       //Color order of the animation. GRB by default
-#define NUM_LEDS YOUR_AMOUTN           //Number of LEDs in your strip (COLUMN_LENGTH * ROW_LENGTH in this case)
-#define COLUMN_LENGTH YOUR_LENGTH       //Number of LEDs on the Y axis of your Pixelbox
-#define ROW_LENGTH YOUR_LENGTH          //Number of LEDs on the X axis of your Pixelbox
-#define BRIGHTNESS 255        //General brightness of the LEDs
-#define FRAMES_PER_SECOND 30  //Animations speed. 60 fps will be two times faster than 30 fps
+#define DATA_PIN YOUR_DATA_PIN      //Microcontroller pin for the LED strip data line
+#define LED_TYPE WS2812             //Your LED strip type. Check https://github.com/FastLED/FastLED for the supported LED strips
+#define COLOR_ORDER GRB             //Color order of the animation. GRB by default
+#define NUM_LEDS YOUR_AMOUTN        //Number of LEDs in your strip (COLUMN_LENGTH * ROW_LENGTH in this case)
+#define COLUMN_LENGTH YOUR_LENGTH   //Number of LEDs on the Y axis of your Pixelbox
+#define ROW_LENGTH YOUR_LENGTH      //Number of LEDs on the X axis of your Pixelbox
+#define BRIGHTNESS 255              //General brightness of the LEDs
+#define FRAMES_PER_SECOND 30        //Animations speed. 60 fps will be two times faster than 30 fps
 ````
