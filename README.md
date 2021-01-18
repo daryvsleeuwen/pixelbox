@@ -6,7 +6,7 @@ An interactive Pixelbox that uses LED lights to create animations based on user 
 
 The Pixelbox program provides 3 animation fases of which 2 and 3 are interactive
 
-[Fase 3 demo](https://www.youtube.com/watch?v=C89gsYPGuIQ&feature=youtu.be)
+![Fase 3 demo](/fase3-demo.gif)
 
 &nbsp;
 
@@ -22,7 +22,7 @@ You will need a LED strip that has the ability to address each individual LED. F
 To make the Pixelbox interactive with user input, a [Ultrasonic sensor](https://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/) is used. Based on how far away an object such as your hand is placed, the animation in a specific fase will react on that input
 
 &nbsp;
-[Fase 2 demo](https://www.youtube.com/watch?v=GRwhG71XTbM&feature=youtu.be)
+![Fase 2 demo](/fase2-demo.gif)
 
 &nbsp;
 
