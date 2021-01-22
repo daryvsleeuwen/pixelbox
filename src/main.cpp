@@ -30,8 +30,8 @@ int mainHue = 1;
 double minFadeValue = 40.0;
 pixelCoords lastpixel = pixelCoords{3, 3};
 
-int trigPin = 8;
-int echoPin = 9;
+int trigPin = 9;
+int echoPin = 8;
 int lastscanneddistance;
 
 int ReadDistance(int trig, int echo)
