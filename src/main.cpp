@@ -218,7 +218,6 @@ void fase3()
 
   for (int i = 0; i < trail; i++)
   {
-    //int hue = random(BlueGreen.ehue, BlueGreen.shue);
     leds[index- - i] = CHSV(mainHue, 255, 255);
   }
 
